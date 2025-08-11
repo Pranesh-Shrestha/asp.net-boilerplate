@@ -1,4 +1,4 @@
-name: "build and test"
+name: .NET Build
 
 on:
   workflow_dispatch:
@@ -12,10 +12,10 @@ jobs:
     name: Run build
     steps:
       - name: Setup PSE
-        uses: invisirisk/pse-action@test
+        uses: invisirisk/pse-action@dev-test
         with:
           api_url: "https://app.stage.invisirisk.com"
-          app_token: ${{ secrets.IR_API_KEY_STAGE }}
+          app_token: ${{ secrets.IR_API_KEY_L_STAGE }}
           
       - uses: actions/checkout@v2
       - name: Setup .NET
@@ -31,8 +31,20 @@ jobs:
       
       - name: Cleanup PSE
         if: always()
-        uses: invisirisk/pse-action@test
+        uses: invisirisk/pse-action@dev-test
         with:
           cleanup: "true"
-          cleanup_step_name: "Cleanup PSE"
-          debug: "true"
+          
+  gather_analytics:
+   runs-on: ubuntu-latest
+   name: Gather Analytics
+   needs: build
+   if: always()
+   steps:
+   - name: Gather Status
+     uses: invisirisk/pse-action@dev-test
+     with:
+      api_url: "https://app.stage.invisirisk.com"
+      app_token: ${{ secrets.IR_API_KEY_L_STAGE }}
+      send_job_status: "true"
+      debug: "true"
